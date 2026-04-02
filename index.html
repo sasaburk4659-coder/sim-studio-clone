@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Sim Studio — AI Workflow Builder</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -261,11 +261,27 @@ input,textarea,select,button{font-family:inherit;font-size:inherit}
 .settings-row input{flex:1;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:8px 12px;border-radius:var(--radius);font-size:12px}
 .settings-row input:focus{border-color:var(--accent);outline:none}
 .settings-row .save-key{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-size:12px}
+.settings-row select{flex:1;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:8px 12px;border-radius:var(--radius);font-size:12px}
 
 /* ===== EMPTY STATE ===== */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:12px}
 .empty-state svg{width:48px;height:48px;opacity:.3}
 .empty-state p{font-size:14px}
+
+/* ===== MOBILE ADAPTATION ===== */
+@media (max-width: 768px) {
+  #sidebar { position: absolute; z-index: 150; height: 100%; }
+  #sidebar.collapsed { width: 0; min-width: 0; }
+  #right-panel.open { width: 100%; position: absolute; right: 0; z-index: 120; background: var(--bg-secondary); height: 100%; }
+  #chat-panel { width: 100%; }
+  #palette { width: 85%; }
+  .tb-btn span { display: none; }
+  .tb-btn { padding: 6px; }
+  #topbar-center .tb-btn span { display: none; }
+  #topbar-center .tb-btn svg { margin: 0; }
+  .block { min-width: 180px; }
+  .modal { min-width: 90%; margin: 16px; }
+}
 </style>
 </head>
 <body>
@@ -338,23 +354,25 @@ input,textarea,select,button{font-family:inherit;font-size:inherit}
     <div id="topbar-left">
       <button class="tb-btn" onclick="togglePalette()" title="Block Palette">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Blocks
+        <span>Blocks</span>
       </button>
       <input id="wf-name" value="My Workflow" onchange="renameWorkflow(this.value)">
     </div>
     <div id="topbar-center">
-      <button class="tb-btn" onclick="undo()" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></button>
-      <button class="tb-btn" onclick="redo()" title="Redo (Ctrl+Y)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.13-9.36L23 10"/></svg></button>
-      <button class="tb-btn" onclick="saveWorkflow()" title="Save (Ctrl+S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save</button>
+      <button class="tb-btn" onclick="undo()" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg><span>Undo</span></button>
+      <button class="tb-btn" onclick="redo()" title="Redo (Ctrl+Y)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.13-9.36L23 10"/></svg><span>Redo</span></button>
+      <button class="tb-btn" onclick="saveWorkflow()" title="Save (Ctrl+S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span>Save</span></button>
     </div>
     <div id="topbar-right">
       <span id="zoom-display">100%</span>
-      <button class="tb-btn" onclick="toggleLogPanel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> Logs</button>
-      <button class="tb-btn primary" onclick="runWorkflow()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run
+      <button class="tb-btn" onclick="toggleLogPanel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><span>Logs</span></button>
+      <button class="tb-btn primary" onclick="runWorkflow()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Run</span></button>
+      <button class="tb-btn deploy" onclick="deployWorkflow()"><span>Deploy</span></button>
+      <button class="tb-btn" onclick="exportWorkflow()"><span>Export</span></button>
+      <button class="tb-btn" onclick="showSettings()" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Settings</span>
       </button>
-      <button class="tb-btn deploy" onclick="deployWorkflow()">Deploy</button>
-      <button class="tb-btn" onclick="exportWorkflow()">Export</button>
     </div>
   </div>
 
@@ -411,7 +429,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit}
     <button id="chat-close" onclick="toggleChat()">✕</button>
   </div>
   <div id="chat-messages">
-    <div class="chat-msg ai">👋 Привет! Я ваш AI-ассистент для Sim Studio. Помогу построить workflows, настроить блоки и ответить на вопросы. Подключите Google Gemini API ключ в Настройках для полноценной работы ИИ.</div>
+    <div class="chat-msg ai">👋 Привет! Я ваш AI-ассистент для Sim Studio. Помогу построить workflows, настроить блоки и ответить на вопросы. Выберите AI провайдера в настройках (шестерёнка) и введите API ключ для Gemini или Mistral.</div>
   </div>
   <div id="chat-input-area">
     <textarea id="chat-input" rows="1" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
@@ -461,29 +479,25 @@ input,textarea,select,button{font-family:inherit;font-size:inherit}
   <div id="settings-inner">
     <button onclick="closeSettings()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;float:right">✕</button>
     <h2>⚙️ Settings</h2>
-    <p class="settings-subtitle">Configure your workspace and API keys</p>
+    <p class="settings-subtitle">Configure your workspace and AI providers</p>
     <div class="settings-card">
-      <h3>🔑 API Keys</h3>
-      <p style="font-size:11px;color:var(--text-muted);margin-bottom:16px">Connect your API keys to enable AI features. Keys are stored locally in your browser.</p>
+      <h3>🤖 AI Provider</h3>
       <div class="settings-row">
-        <label>Google Gemini</label>
+        <label>Select AI</label>
+        <select id="ai-provider" onchange="onAIProviderChange()">
+          <option value="gemini">Google Gemini</option>
+          <option value="mistral">Mistral AI</option>
+        </select>
+      </div>
+      <div class="settings-row" id="gemini-key-row">
+        <label>Gemini API Key</label>
         <input type="password" id="key-gemini" placeholder="AIza...">
         <button class="save-key" onclick="saveKey('gemini')">Save</button>
       </div>
-      <div class="settings-row">
-        <label>OpenAI</label>
-        <input type="password" id="key-openai" placeholder="sk-...">
-        <button class="save-key" onclick="saveKey('openai')">Save</button>
-      </div>
-      <div class="settings-row">
-        <label>Anthropic</label>
-        <input type="password" id="key-anthropic" placeholder="sk-ant-...">
-        <button class="save-key" onclick="saveKey('anthropic')">Save</button>
-      </div>
-      <div class="settings-row">
-        <label>DeepSeek</label>
-        <input type="password" id="key-deepseek" placeholder="sk-...">
-        <button class="save-key" onclick="saveKey('deepseek')">Save</button>
+      <div class="settings-row" id="mistral-key-row" style="display:none">
+        <label>Mistral API Key</label>
+        <input type="password" id="key-mistral" placeholder="mistral...">
+        <button class="save-key" onclick="saveKey('mistral')">Save</button>
       </div>
     </div>
     <div class="settings-card">
@@ -495,7 +509,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit}
     </div>
     <div class="settings-card">
       <h3>🎨 Appearance</h3>
-      <p style="font-size:12px;color:var(--text-muted)">Dark theme is the default. More themes coming soon.</p>
+      <p style="font-size:12px;color:var(--text-muted)">Dark theme is default. More themes coming soon.</p>
     </div>
   </div>
 </div>
@@ -526,7 +540,8 @@ const APP = {
   dragBlock: null,
   dragOffset: { x: 0, y: 0 },
   apiKeys: {},
-  nextId: 1
+  nextId: 1,
+  aiProvider: 'gemini' // default
 };
 
 // ===== BLOCK DEFINITIONS =====
@@ -653,6 +668,7 @@ function init() {
   selectWorkflow(APP.activeWf || Object.keys(APP.workflows)[0]);
   initCanvasEvents();
   loadApiKeys();
+  loadAISettings();
   addLog('info', 'Sim Studio initialized');
 }
 
@@ -925,7 +941,6 @@ function initCanvasEvents() {
   const container = document.getElementById('canvas-container');
   const canvas = document.getElementById('canvas');
 
-  // Pan
   container.addEventListener('mousedown', e => {
     if (e.target.closest('.block') || e.target.closest('.port') || e.target.closest('#palette') || e.target.closest('#minimap')) return;
     APP.isPanning = true;
@@ -947,7 +962,6 @@ function initCanvasEvents() {
     canvas.classList.remove('grabbing');
   });
 
-  // Zoom
   container.addEventListener('wheel', e => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.05 : 0.05;
@@ -956,7 +970,6 @@ function initCanvasEvents() {
     document.getElementById('zoom-display').textContent = Math.round(APP.zoom * 100) + '%';
   }, { passive: false });
 
-  // Drop from palette
   container.addEventListener('dragover', e => e.preventDefault());
   container.addEventListener('drop', e => {
     e.preventDefault();
@@ -968,7 +981,16 @@ function initCanvasEvents() {
     addBlock(type, x, y);
   });
 
-  // Keyboard
+  // Double click on canvas to add a default block (Start)
+  container.addEventListener('dblclick', e => {
+    if (e.target.closest('.block')) return;
+    const rect = container.getBoundingClientRect();
+    const x = (e.clientX - rect.left - APP.pan.x) / APP.zoom;
+    const y = (e.clientY - rect.top - APP.pan.y) / APP.zoom;
+    addBlock('start', x, y);
+    notify('Start block added', 'info');
+  });
+
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
@@ -1001,13 +1023,11 @@ function updateBg() {
   bg.style.backgroundPosition = `${APP.pan.x}px ${APP.pan.y}px`;
 }
 
-// ===== DRAG FROM PALETTE =====
 function onPaletteDragStart(e, type) {
   e.dataTransfer.setData('block-type', type);
   e.dataTransfer.effectAllowed = 'copy';
 }
 
-// ===== ADD/DELETE BLOCKS =====
 function addBlock(type, x, y) {
   pushUndo();
   const wf = getWf();
@@ -1071,7 +1091,6 @@ function pasteBlocks() {
   hideContextMenu();
 }
 
-// ===== RIGHT PANEL =====
 function openRightPanel(bid) {
   const wf = getWf();
   const block = wf.blocks[bid];
@@ -1116,7 +1135,6 @@ function closeRightPanel() {
   document.getElementById('right-panel').classList.remove('open');
 }
 
-// ===== UNDO / REDO =====
 function pushUndo() {
   const wf = getWf();
   APP.undoStack.push(JSON.stringify(wf));
@@ -1146,7 +1164,6 @@ function redo() {
   addLog('info', 'Redo');
 }
 
-// ===== RUN WORKFLOW =====
 function runWorkflow() {
   const wf = getWf();
   if (!wf || Object.keys(wf.blocks).length === 0) { notify('Add blocks first', 'error'); return; }
@@ -1176,7 +1193,6 @@ function deployWorkflow() {
   addLog('success', '🚀 Deployed: ' + getWf().name);
 }
 
-// ===== EXPORT / IMPORT =====
 function exportWorkflow() {
   const wf = getWf();
   const data = JSON.stringify(wf, null, 2);
@@ -1192,7 +1208,6 @@ function downloadFile(name, content, type) {
   URL.revokeObjectURL(url);
 }
 
-// ===== SAVE / LOAD =====
 function saveWorkflow() {
   saveToStorage();
   notify('Saved!', 'success');
@@ -1223,10 +1238,8 @@ function loadFromStorage() {
 function loadApiKeys() {
   try {
     APP.apiKeys = JSON.parse(localStorage.getItem('sim_api_keys') || '{}');
-    for (const [k, v] of Object.entries(APP.apiKeys)) {
-      const el = document.getElementById('key-' + k);
-      if (el) el.value = v;
-    }
+    document.getElementById('key-gemini').value = APP.apiKeys.gemini || '';
+    document.getElementById('key-mistral').value = APP.apiKeys.mistral || '';
   } catch(e) {}
 }
 
@@ -1239,7 +1252,33 @@ function saveKey(provider) {
   }
 }
 
-// ===== CHAT =====
+function loadAISettings() {
+  const savedProvider = localStorage.getItem('sim_ai_provider');
+  if (savedProvider === 'gemini' || savedProvider === 'mistral') {
+    APP.aiProvider = savedProvider;
+    document.getElementById('ai-provider').value = savedProvider;
+    onAIProviderChange();
+  }
+  // Load saved API keys into config fields as well (for convenience)
+  if (APP.apiKeys.gemini) document.getElementById('key-gemini').value = APP.apiKeys.gemini;
+  if (APP.apiKeys.mistral) document.getElementById('key-mistral').value = APP.apiKeys.mistral;
+}
+
+function onAIProviderChange() {
+  const provider = document.getElementById('ai-provider').value;
+  APP.aiProvider = provider;
+  localStorage.setItem('sim_ai_provider', provider);
+  const geminiRow = document.getElementById('gemini-key-row');
+  const mistralRow = document.getElementById('mistral-key-row');
+  if (provider === 'gemini') {
+    geminiRow.style.display = 'flex';
+    mistralRow.style.display = 'none';
+  } else {
+    geminiRow.style.display = 'none';
+    mistralRow.style.display = 'flex';
+  }
+}
+
 function toggleChat() {
   document.getElementById('chat-panel').classList.toggle('open');
 }
@@ -1251,7 +1290,6 @@ function sendChat() {
   input.value = '';
   appendChatMsg(msg, 'user');
 
-  // Show typing
   const typingId = 'typing-' + Date.now();
   const msgContainer = document.getElementById('chat-messages');
   const typingEl = document.createElement('div');
@@ -1265,7 +1303,7 @@ function sendChat() {
     typingEl.remove();
     let response = generateAIResponse(msg);
     appendChatMsg(response, 'ai');
-  }, 1000 + Math.random() * 1000);
+  }, 800);
 }
 
 function appendChatMsg(text, role) {
@@ -1279,20 +1317,23 @@ function appendChatMsg(text, role) {
 
 function generateAIResponse(msg) {
   const lower = msg.toLowerCase();
-  if (APP.apiKeys.gemini) {
-    return 'AI функции активированы с Google Gemini. В реальном приложении здесь бы был ответ от Gemini API. Ваш запрос: "' + msg + '"';
+  const selectedProvider = APP.aiProvider;
+  const apiKey = selectedProvider === 'gemini' ? APP.apiKeys.gemini : APP.apiKeys.mistral;
+  if (apiKey) {
+    // Here you could integrate real API calls, but for demo we simulate
+    return `🤖 [${selectedProvider === 'gemini' ? 'Gemini' : 'Mistral'}] API ключ настроен! В реальном приложении здесь был бы ответ от ${selectedProvider === 'gemini' ? 'Google Gemini' : 'Mistral AI'}. Ваш запрос: "${msg}"\n\n💡 Подсказка: вы можете создавать блоки вручную через палитру (кнопка Blocks) и соединять их.`;
+  } else {
+    if (lower.includes('блок') || lower.includes('block')) return '📦 Чтобы добавить блок, нажмите кнопку "Blocks" в тулбаре или перетащите блок из палитры на канвас. Доступно 60+ типов блоков! Можно также дважды кликнуть на канвасе для добавления блока Start.';
+    if (lower.includes('workflow') || lower.includes('воркфлоу')) return '⚡ Workflow — это визуальный пайплайн из блоков. Соедините Start → Agent → Response для базового чат-бота. Используйте Condition и Router для ветвления логики.';
+    if (lower.includes('agent') || lower.includes('агент')) return '🤖 Блок Agent — обёртка вокруг LLM. Поддерживает модели: Gemini, GPT-5, Claude, DeepSeek, Grok, Mistral. Настройте System Prompt, Temperature и Memory для контекста.';
+    if (lower.includes('api') || lower.includes('ключ') || lower.includes('key')) return '🔑 Зайдите в Settings (⚙️) и добавьте API ключи для нужных провайдеров. Поддерживаются: Google Gemini и Mistral AI.';
+    if (lower.includes('deploy') || lower.includes('деплой')) return '🚀 Нажмите кнопку Deploy в тулбаре чтобы развернуть workflow как API endpoint, чат-интерфейс или MCP tool.';
+    if (lower.includes('помо') || lower.includes('help')) return '📚 Я могу помочь с:\n• Созданием workflows\n• Настройкой блоков\n• Подключением интеграций\n• Деплоем и экспортом\nПодключите Gemini или Mistral API ключ в настройках для полноценного ИИ!';
+    if (lower.includes('привет') || lower.includes('hello') || lower.includes('hi')) return '👋 Привет! Я AI-ассистент Sim Studio. Чем могу помочь? Спросите про блоки, workflows, интеграции или деплой.';
+    return '💡 Интересный вопрос! Для полноценного ИИ-ответа подключите API ключ провайдера (Gemini или Mistral) в Settings. А пока я могу помочь с навигацией по Sim Studio — спросите про блоки, workflows или интеграции!';
   }
-  if (lower.includes('блок') || lower.includes('block')) return '📦 Чтобы добавить блок, нажмите кнопку "Blocks" в тулбаре или перетащите блок из палитры на канвас. Доступно 60+ типов блоков!';
-  if (lower.includes('workflow') || lower.includes('воркфлоу')) return '⚡ Workflow — это визуальный пайплайн из блоков. Соедините Start → Agent → Response для базового чат-бота. Используйте Condition и Router для ветвления логики.';
-  if (lower.includes('agent') || lower.includes('агент')) return '🤖 Блок Agent — обёртка вокруг LLM. Поддерживает модели: Gemini, GPT-5, Claude, DeepSeek, Grok, Mistral. Настройте System Prompt, Temperature и Memory для контекста.';
-  if (lower.includes('api') || lower.includes('ключ') || lower.includes('key')) return '🔑 Зайдите в Settings (⚙️) и добавьте API ключи для нужных провайдеров. Поддерживаются: Google Gemini, OpenAI, Anthropic, DeepSeek и другие.';
-  if (lower.includes('deploy') || lower.includes('деплой')) return '🚀 Нажмите кнопку Deploy в тулбаре чтобы развернуть workflow как API endpoint, чат-интерфейс или MCP tool.';
-  if (lower.includes('помо') || lower.includes('help')) return '📚 Я могу помочь с:\n• Созданием workflows\n• Настройкой блоков\n• Подключением интеграций\n• Деплоем и экспортом\nПодключите Gemini API ключ для полноценного ИИ!';
-  if (lower.includes('привет') || lower.includes('hello') || lower.includes('hi')) return '👋 Привет! Я AI-ассистент Sim Studio. Чем могу помочь? Спросите про блоки, workflows, интеграции или деплой.';
-  return '💡 Интересный вопрос! Для полноценного ИИ-ответа подключите Google Gemini API ключ в Settings. А пока я могу помочь с навигацией по Sim Studio — спросите про блоки, workflows или интеграции!';
 }
 
-// ===== CONTEXT MENUS =====
 function showBlockContextMenu(e, bid) {
   APP.selectedBlock = bid;
   selectBlock(bid);
@@ -1327,7 +1368,6 @@ function duplicateWorkflow(id) {
 
 function hideContextMenu() {
   document.getElementById('context-menu').style.display = 'none';
-  // Reset context menu to block menu
   document.getElementById('context-menu').innerHTML = `
     <div class="cm-item" onclick="duplicateSelected()">📋 Duplicate</div>
     <div class="cm-item" onclick="copySelected()">📄 Copy</div>
@@ -1336,27 +1376,22 @@ function hideContextMenu() {
     <div class="cm-item danger" onclick="deleteSelected()">🗑 Delete</div>
   `;
 }
-
 document.addEventListener('click', hideContextMenu);
 
-// ===== MODALS =====
 function showModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 function showNewMenu() { showModal('new-modal'); }
 
-// ===== SIDEBAR =====
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 function navigate(page) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
   if (page === 'logs') toggleLogPanel();
 }
 
-// ===== SETTINGS =====
-function showSettings() { document.getElementById('settings-page').classList.add('show'); }
+function showSettings() { document.getElementById('settings-page').classList.add('show'); loadAISettings(); }
 function closeSettings() { document.getElementById('settings-page').classList.remove('show'); }
 
-// ===== LOG PANEL =====
 function toggleLogPanel() { document.getElementById('log-panel').classList.toggle('open'); }
 function addLog(type, msg) {
   const body = document.getElementById('log-body');
@@ -1365,7 +1400,6 @@ function addLog(type, msg) {
   body.scrollTop = body.scrollHeight;
 }
 
-// ===== MINIMAP =====
 function updateMinimap() {
   const canvas = document.getElementById('minimap-canvas');
   const ctx = canvas.getContext('2d');
@@ -1396,7 +1430,6 @@ function updateMinimap() {
   ctx.globalAlpha = 1;
 }
 
-// ===== NOTIFICATIONS =====
 function notify(msg, type) {
   const el = document.createElement('div');
   el.className = 'notification ' + (type || '');
@@ -1405,8 +1438,7 @@ function notify(msg, type) {
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2500);
 }
 
-// ===== INIT =====
 init();
 </script>
 </body>
-</html>
+  </html>
